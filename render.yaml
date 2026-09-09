@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: doc-converter
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install .
+    startCommand: >-
+      gunicorn converter.app:app
+      --bind 0.0.0.0:$PORT
+      --workers 1
+      --threads 4
+      --timeout 120
+    healthCheckPath: /healthz
+    autoDeployTrigger: commit
+    envVars:
+      # Free instance has 512 MB RAM; keep uploads modest so conversions
+      # don't OOM. Raise if you move to a paid plan.
+      - key: CONVERTER_MAX_MB
+        value: "25"
+      - key: PYTHON_VERSION
+        value: "3.12.5"
