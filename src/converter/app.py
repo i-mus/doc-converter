@@ -53,7 +53,7 @@ def healthz() -> Response:
 def visits_route() -> Response:
     fresh = request.cookies.get("v") != "1"
     n = visits.bump() if fresh else visits.count()
-    resp = jsonify(count=n)
+    resp = jsonify(count=n, **visits.status())
     if fresh:
         resp.set_cookie("v", "1", max_age=31_536_000, samesite="Lax")
     return resp

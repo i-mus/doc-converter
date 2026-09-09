@@ -20,8 +20,13 @@ _UPSTASH_TOKEN = os.environ.get("UPSTASH_REDIS_REST_TOKEN", "")
 _FILE = Path(os.environ.get("CONVERTER_DATA_DIR", ".data")) / "visits.json"
 _LOCK = threading.Lock()
 
+# Which backend actually served the most recent call: "redis" or "file".
+_last_backend = "file"
+_last_error = ""
+
 
 def _upstash(*path: str) -> int | None:
+    global _last_backend, _last_error
     if not (_UPSTASH_URL and _UPSTASH_TOKEN):
         return None
     req = urllib.request.Request(
@@ -30,8 +35,11 @@ def _upstash(*path: str) -> int | None:
     )
     try:
         with urllib.request.urlopen(req, timeout=2.5) as resp:
-            return int(json.load(resp).get("result") or 0)
-    except Exception:
+            value = int(json.load(resp).get("result") or 0)
+        _last_backend, _last_error = "redis", ""
+        return value
+    except Exception as exc:  # noqa: BLE001
+        _last_backend, _last_error = "file", f"{type(exc).__name__}: {exc}"
         return None
 
 
@@ -63,3 +71,12 @@ def bump() -> int:
     """Increment and return the new visit count."""
     n = _upstash("incr", _KEY)
     return n if n is not None else _file_bump()
+
+
+def status() -> dict:
+    """Diagnostics: is Redis configured, and did the last call reach it?"""
+    return {
+        "configured": bool(_UPSTASH_URL and _UPSTASH_TOKEN),
+        "backend": _last_backend,
+        "error": _last_error,
+    }
