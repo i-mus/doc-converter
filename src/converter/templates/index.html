@@ -8,6 +8,7 @@
 <meta name="description" content="Free online converter. Turn Markdown into a formatted Word (.docx) file, or merge JPG, PNG, GIF, BMP, TIFF and WebP images into one PDF. No sign-up, no watermark — files are processed in memory and never stored.">
 <meta name="keywords" content="markdown to word, markdown to docx, md to docx, convert markdown to word, markdown to word converter, image to pdf, images to pdf, jpg to pdf, png to pdf, combine images into pdf, merge images to pdf, picture to pdf, free document converter, online file converter, no sign up converter">
 <meta name="robots" content="index, follow">
+<meta name="author" content="i-mus (github.com/i-mus)">
 <meta name="theme-color" content="#b4552d">
 <link rel="canonical" href="{{ site_url }}/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23b4552d'/%3E%3Ctext x='16' y='23' font-size='19' text-anchor='middle' fill='%23fbf7ee' font-family='Georgia,serif'%3EC%3C/text%3E%3C/svg%3E">
@@ -30,7 +31,8 @@
   "description": "Free online converter for Markdown to Word (.docx) and images to PDF.",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
-  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Person", "name": "i-mus", "url": "https://github.com/i-mus" }
 }
 </script>
 
@@ -293,6 +295,14 @@
     text-transform: uppercase;
     color: var(--muted);
   }
+  footer .by { display: block; margin-top: 7px; }
+  footer a {
+    color: var(--muted);
+    text-decoration: none;
+    border-bottom: 1px solid var(--hair);
+    transition: color .15s, border-color .15s;
+  }
+  footer a:hover { color: var(--accent); border-color: var(--accent); }
 
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
@@ -348,6 +358,7 @@
 
   <footer>
     <span id="visits" hidden></span>Files are converted in memory &middot; never stored
+    <span class="by">Developed by <a href="https://github.com/i-mus" target="_blank" rel="noopener">i-mus</a></span>
   </footer>
 </div>
 
