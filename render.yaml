@@ -20,3 +20,12 @@ services:
         value: "25"
       - key: PYTHON_VERSION
         value: "3.12.5"
+      # Live URL — keeps canonical / OG / sitemap links correct.
+      - key: CONVERTER_SITE_URL
+        value: "https://doc-converter-4vgm.onrender.com"
+      # Optional: a free Upstash Redis makes the visit count survive restarts.
+      # Create one at upstash.com and paste the REST URL + token here.
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false

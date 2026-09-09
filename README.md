@@ -63,8 +63,22 @@ image_to_pdf.convert_files(["1.jpg", "2.png"], "out.pdf")
 |------|---------|
 | `src/converter/md_to_docx.py`   | Markdown → HTML (`markdown`) → DOCX (`htmldocx` + `python-docx`) |
 | `src/converter/image_to_pdf.py` | Normalise images with Pillow, assemble PDF with `img2pdf` |
-| `src/converter/app.py`          | Flask app + JSON API (`/api/md-to-docx`, `/api/image-to-pdf`) |
-| `src/converter/templates/index.html` | Drag-and-drop UI |
+| `src/converter/visits.py`       | Visit counter (Upstash Redis, or a local JSON file) |
+| `src/converter/app.py`          | Flask app + JSON API, `robots.txt`, `sitemap.xml` |
+| `src/converter/templates/index.html` | Drag-and-drop UI, SEO meta, JSON-LD |
+
+## SEO & analytics
+
+- `<title>`, description, keywords, Open Graph / Twitter tags and a
+  `WebApplication` JSON-LD block are in the template; `robots.txt` and
+  `sitemap.xml` are served by the app.
+- Canonical / OG / sitemap URLs come from `CONVERTER_SITE_URL` (set it to the
+  deployed origin), falling back to the request host.
+- The footer shows a visit count from `/api/visits` (one bump per browser, via
+  a year-long cookie). It uses Upstash Redis when `UPSTASH_REDIS_REST_URL` and
+  `UPSTASH_REDIS_REST_TOKEN` are set, otherwise a local JSON file under
+  `CONVERTER_DATA_DIR` (which resets on a Render free-tier restart — add the
+  free Upstash tier to make it stick).
 
 ## Notes / limits
 

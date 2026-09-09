@@ -3,7 +3,37 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Converter</title>
+
+<title>Markdown to Word &amp; Image to PDF Converter — free, no sign-up</title>
+<meta name="description" content="Free online converter. Turn Markdown into a formatted Word (.docx) file, or merge JPG, PNG, GIF, BMP, TIFF and WebP images into one PDF. No sign-up, no watermark — files are processed in memory and never stored.">
+<meta name="keywords" content="markdown to word, markdown to docx, md to docx, convert markdown to word, markdown to word converter, image to pdf, images to pdf, jpg to pdf, png to pdf, combine images into pdf, merge images to pdf, picture to pdf, free document converter, online file converter, no sign up converter">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#b4552d">
+<link rel="canonical" href="{{ site_url }}/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23b4552d'/%3E%3Ctext x='16' y='23' font-size='19' text-anchor='middle' fill='%23fbf7ee' font-family='Georgia,serif'%3EC%3C/text%3E%3C/svg%3E">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Converter">
+<meta property="og:title" content="Markdown to Word &amp; Image to PDF Converter">
+<meta property="og:description" content="Free online converter — Markdown to .docx and images to a single PDF. No sign-up, files never stored.">
+<meta property="og:url" content="{{ site_url }}/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Markdown to Word &amp; Image to PDF Converter">
+<meta name="twitter:description" content="Free online converter — Markdown to .docx and images to a single PDF. No sign-up.">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Converter",
+  "url": "{{ site_url }}/",
+  "description": "Free online converter for Markdown to Word (.docx) and images to PDF.",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+
 <style>
   :root {
     --paper:      #f7f4ec;
@@ -95,7 +125,9 @@
   /* tabs */
   .tabs {
     display: flex;
-    gap: 26px;
+    flex-wrap: wrap;
+    column-gap: 24px;
+    row-gap: 8px;
     margin-bottom: 24px;
   }
   .tabs button {
@@ -103,8 +135,8 @@
     border: 0;
     background: none;
     font: inherit;
-    font-size: 12px;
-    letter-spacing: 0.13em;
+    font-size: 11px;
+    letter-spacing: 0.11em;
     text-transform: uppercase;
     color: var(--muted);
     cursor: pointer;
@@ -277,8 +309,8 @@
   </header>
 
   <nav class="tabs" role="tablist">
-    <button class="active" data-tab="md" role="tab">Markdown</button>
-    <button data-tab="img" role="tab">Images</button>
+    <button class="active" data-tab="md" role="tab">Markdown&nbsp;to&nbsp;Word</button>
+    <button data-tab="img" role="tab">Images&nbsp;to&nbsp;PDF</button>
   </nav>
 
   <section class="panel active" id="panel-md">
@@ -314,7 +346,9 @@
     <div class="msg" id="msg-img"></div>
   </section>
 
-  <footer>Runs on this machine &middot; nothing leaves</footer>
+  <footer>
+    <span id="visits" hidden></span>Files are converted in memory &middot; never stored
+  </footer>
 </div>
 
 <script>
@@ -443,6 +477,14 @@
     imgFiles.forEach(f => fd.append("files", f));
     postForm("/api/image-to-pdf", fd, document.getElementById("msg-img"), imgBtn, "images.pdf");
   });
+
+  // ---- visitor count ----
+  fetch("/api/visits").then(r => r.json()).then(function (d) {
+    if (typeof d.count !== "number") return;
+    var el = document.getElementById("visits");
+    el.textContent = d.count.toLocaleString() + (d.count === 1 ? " visit  ·  " : " visits  ·  ");
+    el.hidden = false;
+  }).catch(function () {});
 })();
 </script>
 </body>

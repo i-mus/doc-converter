@@ -7,10 +7,14 @@ import os
 import re
 
 from flask import Flask, Response, jsonify, render_template, request, send_file
+from werkzeug.middleware.proxy_fix import ProxyFix
 
-from . import image_to_pdf, md_to_docx
+from . import image_to_pdf, md_to_docx, visits
 
 app = Flask(__name__)
+# Honour X-Forwarded-* from Render's / any reverse proxy so request.url_root
+# reports https and the real host (used for canonical / OG / sitemap URLs).
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # Cap per-request upload size. Lower it on memory-constrained hosting
 # (e.g. Render's free 512 MB instance) via CONVERTER_MAX_MB.
@@ -24,6 +28,12 @@ def _safe_stem(filename: str, fallback: str) -> str:
     return stem or fallback
 
 
+def _site_url() -> str:
+    """Absolute site origin, e.g. https://doc-converter.onrender.com."""
+    configured = os.environ.get("CONVERTER_SITE_URL", "").strip().rstrip("/")
+    return configured or request.url_root.rstrip("/")
+
+
 @app.errorhandler(413)
 def too_large(_exc):
     return jsonify(error=f"File too large (limit {_MAX_MB} MB)."), 413
@@ -31,12 +41,40 @@ def too_large(_exc):
 
 @app.get("/")
 def index() -> str:
-    return render_template("index.html")
+    return render_template("index.html", site_url=_site_url())
 
 
 @app.get("/healthz")
 def healthz() -> Response:
     return jsonify(status="ok")
+
+
+@app.get("/api/visits")
+def visits_route() -> Response:
+    fresh = request.cookies.get("v") != "1"
+    n = visits.bump() if fresh else visits.count()
+    resp = jsonify(count=n)
+    if fresh:
+        resp.set_cookie("v", "1", max_age=31_536_000, samesite="Lax")
+    return resp
+
+
+@app.get("/robots.txt")
+def robots() -> Response:
+    body = f"User-agent: *\nAllow: /\nSitemap: {_site_url()}/sitemap.xml\n"
+    return Response(body, mimetype="text/plain")
+
+
+@app.get("/sitemap.xml")
+def sitemap() -> Response:
+    body = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f"  <url><loc>{_site_url()}/</loc>"
+        "<changefreq>monthly</changefreq><priority>1.0</priority></url>\n"
+        "</urlset>\n"
+    )
+    return Response(body, mimetype="application/xml")
 
 
 @app.post("/api/md-to-docx")
