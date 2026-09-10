@@ -11,6 +11,10 @@ const md = [
   "",
   "- one",
   "- two",
+  "  - nested",
+  "",
+  "1. first",
+  "2. second",
   "",
   "| A | B |",
   "| - | - |",
@@ -37,6 +41,12 @@ async function main(): Promise<number> {
   const docxOk = docx.subarray(0, 2).toString("latin1") === "PK";
   console.log(`docx  ${docx.length} bytes  ${docxOk ? "OK (zip)" : "BAD"}`);
   if (!docxOk) failures++;
+
+  // Lists must produce a numbering definition, not plain paragraphs.
+  // The zip's central directory stores entry names as plain text.
+  const listsOk = docx.includes(Buffer.from("word/numbering.xml"));
+  console.log(`list  numbering.xml ${listsOk ? "present  OK" : "MISSING  BAD"}`);
+  if (!listsOk) failures++;
 
   const pdf = await imagesToPdf([
     { name: "a.png", data: png },

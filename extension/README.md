@@ -25,11 +25,11 @@ Everything runs locally in the extension host — no upload, works offline.
 
 ## Limitations (v0.1)
 
-- Markdown covers headings, lists, tables, code, blockquotes, links and inline
-  formatting. Images referenced by a local/relative path are **not** embedded.
+- Markdown covers headings, bullet/numbered lists (incl. nested), tables, code,
+  blockquotes, links and inline formatting. Images referenced by a
+  local/relative path are **not** embedded.
 - Image → PDF supports **PNG and JPEG**. EXIF rotation is not yet applied.
-- Complex Markdown tables and deeply nested lists may render more simply than in
-  a full pandoc conversion.
+- Very complex tables may render more simply than in a full pandoc conversion.
 
 For heavier conversions there is also a web version at
 <https://doc-converter-4vgm.onrender.com>.
