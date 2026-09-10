@@ -1,12 +1,16 @@
 # Converter
 
-A small local web app with two tools:
+Two tools, in two forms:
 
 - **Markdown → DOCX** – drop a `.md` file, get a Word document back.
 - **Image → PDF** – drop one or more images, get a single PDF (drag to reorder).
 
-Everything runs on your machine; uploaded files are converted in memory and never
-sent anywhere.
+| Form | Path | Notes |
+| --- | --- | --- |
+| Web app (Flask) | this repo root | Hosted at <https://doc-converter-4vgm.onrender.com> |
+| VS Code extension | [`extension/`](extension/) | Local, offline, nothing uploaded |
+
+Uploaded files are converted in memory and never stored.
 
 ## Setup
 

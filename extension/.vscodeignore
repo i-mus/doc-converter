@@ -1,0 +1,12 @@
+.vscode/**
+src/**
+scripts/**
+node_modules/**
+.gitignore
+.vscodeignore
+esbuild.js
+tsconfig.json
+**/*.ts
+**/*.map
+smoke.docx
+smoke.pdf
