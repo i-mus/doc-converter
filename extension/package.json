@@ -93,6 +93,9 @@
     "watch": "node esbuild.js --watch",
     "check": "tsc --noEmit",
     "smoke": "tsx scripts/smoke.ts",
+    "compile-tests": "tsc -p tsconfig.test.json",
+    "pretest": "npm run build && npm run compile-tests",
+    "test": "vscode-test",
     "icon": "node scripts/make-icon.mjs",
     "vscode:prepublish": "npm run build",
     "package": "npm run build && vsce package --no-dependencies",
@@ -104,10 +107,14 @@
     "pdf-lib": "^1.17.1"
   },
   "devDependencies": {
+    "@types/mocha": "^10.0.10",
     "@types/node": "^20.14.0",
     "@types/vscode": "^1.85.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
     "@vscode/vsce": "^3.0.0",
     "esbuild": "^0.23.0",
+    "mocha": "^10.8.2",
     "sharp": "^0.33.4",
     "tsx": "^4.16.0",
     "typescript": "^5.5.0"

@@ -1,6 +1,8 @@
 node_modules/
 dist/
 out/
+out-test/
+.vscode-test/
 *.vsix
 smoke.docx
 smoke.pdf

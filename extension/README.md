@@ -40,6 +40,7 @@ For heavier conversions there is also a web version at
 npm install
 npm run check     # type-check
 npm run smoke     # headless conversion test -> smoke.docx / smoke.pdf
+npm test          # integration tests in a real VS Code instance
 npm run build     # bundle to dist/extension.js
 npm run package   # build + create the .vsix
 ```

@@ -1,11 +1,15 @@
 .vscode/**
+.vscode-test/**
+.vscode-test.mjs
 src/**
 scripts/**
+out-test/**
 node_modules/**
 .gitignore
 .vscodeignore
 esbuild.js
 tsconfig.json
+tsconfig.test.json
 **/*.ts
 **/*.map
 smoke.docx
