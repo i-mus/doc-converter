@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.4
+
+- README: link the web version (doc-converter-4vgm.onrender.com) up top and
+  in Contributing, not just in the Marketplace homepage field.
+
 ## 0.1.3
 
 - Fix: converting an unsaved Markdown buffer (new file, never saved to disk)

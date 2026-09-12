@@ -4,6 +4,9 @@ Convert **Markdown → Word (.docx)** and **images → PDF**, right from VS Code
 No upload, no sign-up, no account — the conversion runs on your machine, in
 the extension itself.
 
+Not in VS Code, or converting on someone else's machine? The same two
+converters run as a free website: **[doc-converter-4vgm.onrender.com](https://doc-converter-4vgm.onrender.com)**.
+
 ## Features
 
 - **Markdown to Word** — headings, bold/italic/code, bullet and numbered
@@ -72,8 +75,8 @@ principle: a new command, zero new setup.
 
 Issues and pull requests are welcome at
 [github.com/i-mus/doc-converter](https://github.com/i-mus/doc-converter).
-The extension lives in the `extension/` folder; there's also a web version
-of the same two converters at the repo root.
+The extension lives in the `extension/` folder; the Flask source for the
+[web version](https://doc-converter-4vgm.onrender.com) is at the repo root.
 
 ## Development
 
