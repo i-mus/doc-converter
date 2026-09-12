@@ -60,6 +60,31 @@ suite("Doc Converter", () => {
     );
   });
 
+  test("Unsaved Markdown buffer prompts for a save location", async () => {
+    const dir = tmpDir();
+    const dest = path.join(dir, "picked.docx");
+
+    const doc = await vscode.workspace.openTextDocument({
+      language: "markdown",
+      content: "# Untitled\n\n- a\n- b\n",
+    });
+    await vscode.window.showTextDocument(doc);
+    assert.strictEqual(doc.uri.scheme, "untitled");
+
+    const original = vscode.window.showSaveDialog;
+    (vscode.window as unknown as Record<string, unknown>).showSaveDialog = async () =>
+      vscode.Uri.file(dest);
+    try {
+      await vscode.commands.executeCommand("docConverter.mdToDocx");
+    } finally {
+      (vscode.window as unknown as Record<string, unknown>).showSaveDialog = original;
+    }
+
+    await waitForFile(dest);
+    const buf = fs.readFileSync(dest);
+    assert.strictEqual(buf.subarray(0, 2).toString("latin1"), "PK");
+  });
+
   test("Images -> PDF combines the selection", async () => {
     const dir = tmpDir();
     const a = path.join(dir, "a.png");

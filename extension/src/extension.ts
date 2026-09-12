@@ -28,10 +28,12 @@ async function mdToDocxCommand(resource?: vscode.Uri): Promise<void> {
       ? open.getText()
       : Buffer.from(await vscode.workspace.fs.readFile(src)).toString("utf8");
 
-    const target = src.with({
-      path: src.path.replace(/\.(md|markdown)$/i, "") + ".docx",
-    });
-    const dest = await resolveDestination(target);
+    const dest =
+      src.scheme === "file"
+        ? await resolveDestination(
+            src.with({ path: src.path.replace(/\.(md|markdown)$/i, "") + ".docx" }),
+          )
+        : await pickSaveLocation(src, "docx", "Word Document");
     if (!dest) return;
 
     const buffer = await vscode.window.withProgress(
@@ -142,6 +144,24 @@ async function resolveDestination(
     if (!(await exists(candidate))) return candidate;
   }
   return undefined;
+}
+
+/**
+ * For a source that has no real place on disk (an unsaved "untitled:"
+ * buffer, or another virtual scheme) there is no "next to it" to save
+ * beside, so ask the user where to put the result instead of guessing.
+ */
+async function pickSaveLocation(
+  src: vscode.Uri,
+  ext: string,
+  filterLabel: string,
+): Promise<vscode.Uri | undefined> {
+  const base = path.basename(src.path).replace(/\.[^./]+$/, "") || "document";
+  return vscode.window.showSaveDialog({
+    title: `Save ${filterLabel}`,
+    defaultUri: vscode.Uri.file(`${base}.${ext}`),
+    filters: { [filterLabel]: [ext] },
+  });
 }
 
 async function exists(uri: vscode.Uri): Promise<boolean> {

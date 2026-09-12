@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3
+
+- Fix: converting an unsaved Markdown buffer (new file, never saved to disk)
+  now asks where to save the .docx via a Save dialog, instead of failing with
+  a filesystem error.
+
 ## 0.1.2
 
 - Marketplace listing: better keywords/description for search, a branded
