@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.5
+
+- README: note that HTML → PDF is live on the web version and in testing
+  for VS Code (see Roadmap for why it's not a quick add). No code changes.
+
 ## 0.1.4
 
 - README: link the web version (doc-converter-4vgm.onrender.com) up top and

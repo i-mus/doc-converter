@@ -5,7 +5,9 @@ No upload, no sign-up, no account — the conversion runs on your machine, in
 the extension itself.
 
 Not in VS Code, or converting on someone else's machine? The same two
-converters run as a free website: **[doc-converter-4vgm.onrender.com](https://doc-converter-4vgm.onrender.com)**.
+converters — plus **HTML → PDF**, currently web-only — run as a free
+website: **[doc-converter-4vgm.onrender.com](https://doc-converter-4vgm.onrender.com)**.
+A VS Code version of HTML → PDF is in testing; see [Roadmap](#roadmap).
 
 ## Features
 
@@ -68,8 +70,14 @@ so that claim is checkable rather than just stated.
 
 ## Roadmap
 
-More conversions are planned (DOCX ↔ PDF and others) — always the same
-principle: a new command, zero new setup.
+- **HTML → PDF** is live on the [web version](https://doc-converter-4vgm.onrender.com)
+  and in testing for VS Code. Good local HTML→PDF needs real CSS/layout
+  rendering, which in practice means bundling a headless browser — a
+  meaningfully bigger, heavier dependency than `marked`/`pdf-lib`, so it's
+  being evaluated rather than shipped outright, to keep the "no network,
+  no setup" promise this extension makes intact.
+- Beyond that: DOCX ↔ PDF and others — same principle each time, a new
+  command, zero new setup.
 
 ## Contributing
 
