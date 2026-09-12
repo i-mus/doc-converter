@@ -1,8 +1,8 @@
 {
   "name": "doc-converter",
   "displayName": "Doc Converter — Markdown to Word & Images to PDF",
-  "description": "Convert Markdown to .docx and images to PDF, right in the editor. Runs locally, works offline, nothing is uploaded.",
-  "version": "0.1.1",
+  "description": "Convert Markdown to Word (.docx) and images to PDF, right from the editor. 100% local — no upload, no sign-up, no account. Free and open source.",
+  "version": "0.1.2",
   "publisher": "i-mus",
   "license": "MIT",
   "author": "i-mus (https://github.com/i-mus)",
@@ -19,19 +19,30 @@
     "vscode": "^1.85.0"
   },
   "categories": [
-    "Formatters",
     "Other"
   ],
   "keywords": [
-    "markdown",
+    "markdown to word",
+    "markdown to docx",
+    "md to docx",
     "docx",
-    "word",
-    "pdf",
+    "word document",
     "image to pdf",
-    "convert",
+    "images to pdf",
+    "jpg to pdf",
+    "png to pdf",
+    "pdf converter",
+    "document converter",
+    "offline",
+    "privacy",
+    "no upload",
     "export"
   ],
   "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#b4552d",
+    "theme": "dark"
+  },
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [

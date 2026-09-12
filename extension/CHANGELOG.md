@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2
+
+- Marketplace listing: better keywords/description for search, a branded
+  gallery banner, and a rewritten README with a clear How to Use section.
+  No functional changes.
+
 ## 0.1.1
 
 - Markdown bullet and numbered lists (including nested) now render as real
