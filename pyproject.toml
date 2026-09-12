@@ -12,6 +12,7 @@ dependencies = [
     "img2pdf>=0.5",
     "pillow>=10.3",
     "gunicorn>=21.2",
+    "xhtml2pdf>=0.2.16",
 ]
 
 [project.scripts]

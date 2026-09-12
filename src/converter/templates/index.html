@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Markdown to Word &amp; Image to PDF Converter — free, no sign-up</title>
-<meta name="description" content="Free online converter. Turn Markdown into a formatted Word (.docx) file, or merge JPG, PNG, GIF, BMP, TIFF and WebP images into one PDF. No sign-up, no watermark — files are processed in memory and never stored.">
-<meta name="keywords" content="markdown to word, markdown to docx, md to docx, convert markdown to word, markdown to word converter, image to pdf, images to pdf, jpg to pdf, png to pdf, combine images into pdf, merge images to pdf, picture to pdf, free document converter, online file converter, no sign up converter">
+<title>Markdown to Word, Image &amp; HTML to PDF Converter — free, no sign-up</title>
+<meta name="description" content="Free online converter. Turn Markdown into a formatted Word (.docx) file, merge JPG, PNG, GIF, BMP, TIFF and WebP images into one PDF, or render an HTML file to PDF. No sign-up, no watermark — files are processed in memory and never stored.">
+<meta name="keywords" content="markdown to word, markdown to docx, md to docx, convert markdown to word, markdown to word converter, image to pdf, images to pdf, jpg to pdf, png to pdf, combine images into pdf, merge images to pdf, picture to pdf, html to pdf, convert html to pdf, html to pdf converter, free document converter, online file converter, no sign up converter">
 <meta name="robots" content="index, follow">
 <meta name="author" content="i-mus (github.com/i-mus)">
 <meta name="theme-color" content="#b4552d">
@@ -15,12 +15,12 @@
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Converter">
-<meta property="og:title" content="Markdown to Word &amp; Image to PDF Converter">
-<meta property="og:description" content="Free online converter — Markdown to .docx and images to a single PDF. No sign-up, files never stored.">
+<meta property="og:title" content="Markdown to Word, Image &amp; HTML to PDF Converter">
+<meta property="og:description" content="Free online converter — Markdown to .docx, images to a single PDF, HTML to PDF. No sign-up, files never stored.">
 <meta property="og:url" content="{{ site_url }}/">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Markdown to Word &amp; Image to PDF Converter">
-<meta name="twitter:description" content="Free online converter — Markdown to .docx and images to a single PDF. No sign-up.">
+<meta name="twitter:title" content="Markdown to Word, Image &amp; HTML to PDF Converter">
+<meta name="twitter:description" content="Free online converter — Markdown to .docx, images to a single PDF, HTML to PDF. No sign-up.">
 
 <script type="application/ld+json">
 {
@@ -28,7 +28,7 @@
   "@type": "WebApplication",
   "name": "Converter",
   "url": "{{ site_url }}/",
-  "description": "Free online converter for Markdown to Word (.docx) and images to PDF.",
+  "description": "Free online converter for Markdown to Word (.docx), images to PDF, and HTML to PDF.",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
@@ -315,12 +315,13 @@
     <p class="kicker">Local workshop</p>
     <h1>Converter</h1>
     <div class="rule"></div>
-    <p>Markdown into Word <span class="amp">&amp;</span> images into a single PDF</p>
+    <p>Markdown to Word <span class="amp">&amp;</span> images &amp; HTML to PDF</p>
   </header>
 
   <nav class="tabs" role="tablist">
     <button class="active" data-tab="md" role="tab">Markdown&nbsp;to&nbsp;Word</button>
     <button data-tab="img" role="tab">Images&nbsp;to&nbsp;PDF</button>
+    <button data-tab="html" role="tab">HTML&nbsp;to&nbsp;PDF</button>
   </nav>
 
   <section class="panel active" id="panel-md">
@@ -354,6 +355,22 @@
     <ul class="files" id="files-img" hidden></ul>
     <button class="go" id="go-img" disabled>Combine into PDF</button>
     <div class="msg" id="msg-img"></div>
+  </section>
+
+  <section class="panel" id="panel-html">
+    <div class="drop" id="drop-html">
+      <span class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></span>
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 6 2 12l6 6"/>
+        <path d="M16 6l6 6-6 6"/>
+      </svg>
+      <div class="lead">Drop an <em>.html</em> file, or click to browse</div>
+      <div class="hint">One HTML file &nbsp;&mdash;&nbsp; linked styles/images aren't fetched</div>
+      <input type="file" id="input-html" accept=".html,.htm,text/html" hidden>
+    </div>
+    <ul class="files" id="files-html" hidden></ul>
+    <button class="go" id="go-html" disabled>Convert to PDF</button>
+    <div class="msg" id="msg-html"></div>
   </section>
 
   <footer>
@@ -487,6 +504,29 @@
     var fd = new FormData();
     imgFiles.forEach(f => fd.append("files", f));
     postForm("/api/image-to-pdf", fd, document.getElementById("msg-img"), imgBtn, "images.pdf");
+  });
+
+  // ---- HTML ----
+  var htmlFile = null;
+  var htmlList = document.getElementById("files-html");
+  var htmlBtn = document.getElementById("go-html");
+  setupDrop("drop-html", "input-html", false, function (files) { htmlFile = files[0] || null; renderHtml(); });
+  function renderHtml() {
+    htmlList.innerHTML = "";
+    htmlList.hidden = !htmlFile;
+    if (htmlFile) {
+      var li = document.createElement("li");
+      li.innerHTML = '<span class="name"></span><span class="size"></span><button class="x" aria-label="remove">&times;</button>';
+      li.querySelector(".name").textContent = htmlFile.name;
+      li.querySelector(".size").textContent = fmtSize(htmlFile.size);
+      li.querySelector(".x").onclick = () => { htmlFile = null; renderHtml(); document.getElementById("msg-html").textContent = ""; };
+      htmlList.appendChild(li);
+    }
+    htmlBtn.disabled = !htmlFile;
+  }
+  htmlBtn.addEventListener("click", function () {
+    var fd = new FormData(); fd.append("file", htmlFile);
+    postForm("/api/html-to-pdf", fd, document.getElementById("msg-html"), htmlBtn, "document.pdf");
   });
 
   // ---- visitor count ----

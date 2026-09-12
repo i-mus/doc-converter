@@ -1,9 +1,10 @@
 # Converter
 
-Two tools, in two forms:
+Three tools, in two forms:
 
 - **Markdown → DOCX** – drop a `.md` file, get a Word document back.
 - **Image → PDF** – drop one or more images, get a single PDF (drag to reorder).
+- **HTML → PDF** – drop an `.html` file, get a PDF back (web app only for now).
 
 | Form | Path | Notes |
 | --- | --- | --- |
@@ -55,10 +56,11 @@ covers Railway / Heroku-style platforms.
 ## Use from Python / scripts
 
 ```python
-from converter import md_to_docx, image_to_pdf
+from converter import md_to_docx, image_to_pdf, html_to_pdf
 
 md_to_docx.convert_file("notes.md", "notes.docx")
 image_to_pdf.convert_files(["1.jpg", "2.png"], "out.pdf")
+html_to_pdf.convert_file("report.html", "report.pdf")
 ```
 
 ## Project layout
@@ -67,6 +69,7 @@ image_to_pdf.convert_files(["1.jpg", "2.png"], "out.pdf")
 |------|---------|
 | `src/converter/md_to_docx.py`   | Markdown → HTML (`markdown`) → DOCX (`htmldocx` + `python-docx`) |
 | `src/converter/image_to_pdf.py` | Normalise images with Pillow, assemble PDF with `img2pdf` |
+| `src/converter/html_to_pdf.py`  | HTML → PDF (`xhtml2pdf`), external resources blocked (see below) |
 | `src/converter/visits.py`       | Visit counter (Upstash Redis, or a local JSON file) |
 | `src/converter/app.py`          | Flask app + JSON API, `robots.txt`, `sitemap.xml` |
 | `src/converter/templates/index.html` | Drag-and-drop UI, SEO meta, JSON-LD |
@@ -90,4 +93,10 @@ image_to_pdf.convert_files(["1.jpg", "2.png"], "out.pdf")
   and inline formatting. Embedded images by URL are not fetched.
 - Images: JPG, PNG, GIF, BMP, TIFF, WEBP. Transparency is flattened onto white;
   EXIF orientation is applied. Animated/multi-page inputs use the first frame.
+- HTML → PDF only renders content already embedded in the file (inline
+  `<style>`, `data:` URI images). Linked stylesheets, fonts, and remote/local
+  `<img src>` are **not** fetched — deliberately: this runs server-side on
+  arbitrary uploads, and resolving external URIs there is a known SSRF /
+  local-file-disclosure vector for HTML-to-PDF tools. `link_callback` in
+  `html_to_pdf.py` enforces it.
 - Request size cap is `CONVERTER_MAX_MB` (100 locally, 25 on the free Render plan).
