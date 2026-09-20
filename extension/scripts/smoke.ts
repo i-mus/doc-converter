@@ -1,5 +1,6 @@
 /* Headless check of the conversion functions (no VS Code host). */
 import { writeFileSync } from "fs";
+import http from "http";
 import sharp from "sharp";
 import { markdownToDocx } from "../src/convert/markdown";
 import { imagesToPdf } from "../src/convert/images";
@@ -49,7 +50,7 @@ async function main(): Promise<number> {
   console.log(`list  numbering.xml ${listsOk ? "present  OK" : "MISSING  BAD"}`);
   if (!listsOk) failures++;
 
-  const mdPdf = await markdownToPdf(md);
+  const mdPdf = await markdownToPdf(md).then((r) => r.data);
   writeFileSync("smoke-md.pdf", mdPdf);
   const mdPdfOk = Buffer.from(mdPdf.subarray(0, 4)).toString("latin1") === "%PDF";
   console.log(`mdpdf ${mdPdf.length} bytes  ${mdPdfOk ? "OK" : "BAD"}`);
@@ -63,6 +64,43 @@ async function main(): Promise<number> {
   const pdfOk = Buffer.from(pdf.subarray(0, 4)).toString("latin1") === "%PDF";
   console.log(`pdf   ${pdf.length} bytes  ${pdfOk ? "OK" : "BAD"}`);
   if (!pdfOk) failures++;
+
+
+  // Privacy promise: converting must never touch the network, even when the
+  // Markdown points at remote images (including local/private addresses).
+  {
+    const hits: string[] = [];
+    const server = http.createServer((req, res) => {
+      hits.push(req.url ?? "");
+      res.statusCode = 404;
+      res.end();
+    });
+    await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+    const port = (server.address() as { port: number }).port;
+    const probe = `![x](http://127.0.0.1:${port}/a.png)
+
+<img src="http://127.0.0.1:${port}/b.png" alt="y">
+`;
+    await markdownToDocx(probe);
+    await markdownToPdf(probe);
+    server.close();
+    const quiet = hits.length === 0;
+    console.log(`net   ${quiet ? "no requests made  OK" : "REQUESTS: " + hits.join(",") + "  BAD"}`);
+    if (!quiet) failures++;
+  }
+
+  // Symbols and emoji must be drawable; scripts no bundled font has must be reported.
+  {
+    const arrow = String.fromCodePoint(0x2192);
+    const check = String.fromCodePoint(0x2713);
+    const rocket = String.fromCodePoint(0x1f680);
+    const cjk = String.fromCodePoint(0x4f60);
+    const ok = await markdownToPdf(`${arrow} ${check} ${rocket} caf${String.fromCodePoint(0xe9)}`);
+    const bad = await markdownToPdf(`${cjk} text`);
+    const good = ok.unsupported.length === 0 && bad.unsupported.join("") === cjk;
+    console.log(`glyph symbols/emoji drawable, CJK reported  ${good ? "OK" : "BAD"}`);
+    if (!good) failures++;
+  }
 
   return failures;
 }

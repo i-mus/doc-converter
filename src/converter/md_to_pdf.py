@@ -25,14 +25,19 @@ hr { border: 0; border-top: 0.5pt solid #999; }
 """
 
 
-def convert(md_text: str) -> bytes:
-    """Convert a Markdown string to PDF and return the file as bytes."""
+def convert_with_report(md_text: str) -> tuple[bytes, list[str]]:
+    """Convert Markdown to PDF; also return characters no bundled font can draw."""
     body = markdown_to_html(md_text)
     page = (
         '<html><head><meta charset="utf-8"><style>'
         f"{_STYLE}</style></head><body>{body}</body></html>"
     )
-    return html_to_pdf.convert(page)
+    return html_to_pdf.convert_with_report(page)
+
+
+def convert(md_text: str) -> bytes:
+    """Convert a Markdown string to PDF and return the file as bytes."""
+    return convert_with_report(md_text)[0]
 
 
 def convert_file(src_path: str, dest_path: str) -> None:

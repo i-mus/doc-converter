@@ -434,7 +434,7 @@
     // Free hosting sleeps when idle; if the request is still pending after a few
     // seconds, say so instead of leaving a silent spinner.
     var slowTimer = setTimeout(function () {
-      msgEl.textContent = "Waking the server (free hosting sleeps when idle) — this can take up to a minute…";
+      msgEl.textContent = "Still working — bigger files take a while, and the free server may need up to a minute to wake if it was idle…";
     }, 4000);
     try {
       var res = await fetch(url, { method: "POST", body: formData });
@@ -450,7 +450,19 @@
       var m = cd.match(/filename="?([^"]+)"?/);
       var name = m ? m[1] : fallbackName;
       download(blob, name);
-      msgEl.innerHTML = '<span class="done">Saved</span> ' + name;
+      msgEl.textContent = "";
+      var ok = document.createElement("span");
+      ok.className = "done"; ok.textContent = "Saved";
+      msgEl.append(ok, " " + name);
+      // PDFs can't draw every script (e.g. Chinese/Japanese/Arabic): say so.
+      var bad = [];
+      try { bad = JSON.parse(res.headers.get("X-Unsupported-Chars") || "[]"); } catch (_) {}
+      if (bad.length) {
+        var note = document.createElement("div");
+        note.textContent = "Some characters (" + bad.slice(0, 6).join(" ") + (bad.length > 6 ? " …" : "") +
+          ") can't be drawn in a PDF and appear as □. Word (.docx) keeps them.";
+        msgEl.append(note);
+      }
     } catch (e) {
       msgEl.textContent = e.message; msgEl.className = "msg err";
     } finally {

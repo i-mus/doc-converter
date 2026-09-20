@@ -73,13 +73,15 @@ so that claim is checkable rather than just stated.
 
 ## Current limits
 
-- Markdown → Word: local/relative `![image](...)` references aren't embedded
-  (only remote images work, and only if you're online).
+- **Images inside Markdown aren't embedded** in either format — the alt text
+  is kept instead. That's deliberate: fetching an image means a network
+  request, and this extension never makes one.
 - Image → PDF reads **PNG and JPEG**. EXIF auto-rotation isn't applied yet.
 - Very elaborate tables may render more simply than a full pandoc conversion.
-- Markdown → PDF: images aren't embedded (the alt text is kept), and text
-  uses a Latin/Cyrillic/Greek font, so scripts like Chinese, Japanese or
-  Arabic won't render yet. Markdown → Word has no such limit.
+- Markdown → PDF draws Latin, Greek and Cyrillic text plus arrows, symbols
+  and emoji (emoji are single-colour). Scripts it has no font for — Chinese,
+  Japanese, Korean, Arabic, Hebrew — show as □ and you get a warning saying
+  so. **Markdown → Word keeps them all**, so use that for such documents.
 
 ## Roadmap
 

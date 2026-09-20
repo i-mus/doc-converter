@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.1
+
+- Fix: **Markdown → PDF** now draws arrows (→ ↔), check marks, box-drawing
+  characters and emoji instead of empty boxes. Characters no bundled font has
+  (e.g. Chinese) show as □ and you get a warning; Word keeps them.
+- Fix: **Markdown → PDF** wide tables and long lines no longer run off the
+  right edge of the page — columns are sized to their content, long URLs and
+  code lines wrap.
+- Fix: **Markdown → PDF** hard-wrapped paragraphs now flow as normal text
+  instead of breaking at every source line.
+- Fix: **privacy** — converting Markdown to Word used to download any remote
+  image it found, which broke the "no network requests" promise. Images are
+  now replaced by their alt text and nothing is ever fetched.
+- Fix: links in PDFs are only clickable for http(s) and mailto addresses.
+
 ## 0.2.0
 
 - New: **Convert Markdown to PDF** — same three ways as Word (editor button,

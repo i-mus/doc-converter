@@ -73,6 +73,9 @@ html_to_pdf.convert_file("report.html", "report.pdf")
 | `src/converter/md_to_pdf.py`    | Markdown → HTML (`markdown`) → PDF (`xhtml2pdf`, remote resources blocked) |
 | `src/converter/image_to_pdf.py` | Normalise images with Pillow, assemble PDF with `img2pdf` |
 | `src/converter/html_to_pdf.py`  | HTML → PDF (`xhtml2pdf`), external resources blocked (see below) |
+| `src/converter/pdf_fonts.py`    | Registers the bundled fonts, maps CSS font names to them, splits text into font runs |
+| `src/converter/pdf_prepare.py`  | Pre-render HTML pass: code wrapping, table column sizing, long-word breaks, emoji spans |
+| `tests/`                        | Regression tests (SSRF, encodings, limits, fonts) — `uv run --with pytest pytest -q` |
 | `src/converter/visits.py`       | Visit counter (Upstash Redis, or a local JSON file) |
 | `src/converter/app.py`          | Flask app + JSON API, `robots.txt`, `sitemap.xml` |
 | `src/converter/templates/index.html` | Drag-and-drop UI, SEO meta, JSON-LD |
@@ -93,7 +96,22 @@ html_to_pdf.convert_file("report.html", "report.pdf")
 ## Notes / limits
 
 - Markdown supports headings, lists, tables, fenced code, blockquotes, links,
-  and inline formatting. Embedded images by URL are not fetched.
+  and inline formatting. Images are **never embedded or fetched** — the alt
+  text is kept — in both Word and PDF output (`md_to_docx.py` enforces it: the
+  Word library would otherwise download any URL, or open any local path, from
+  an uploaded file). A single newline is a soft break, as in CommonMark; two
+  trailing spaces make a line break.
+- PDFs use bundled fonts (`src/converter/fonts/`): DejaVu Sans / Sans Mono for
+  Latin, Greek, Cyrillic, arrows, symbols and box drawing, and Noto Emoji
+  (single-colour) for emoji. Characters with no font (Chinese, Japanese,
+  Korean, Arabic, Hebrew) become □ and the page warns about it; Word output
+  keeps them. Licences are next to the fonts.
+- `pdf_prepare.py` works around xhtml2pdf layout gaps before rendering: it
+  hard-wraps code, sizes table columns from their content and lets very long
+  words break.
+- Markdown / HTML uploads are capped at `CONVERTER_MAX_TEXT_MB` (default 1):
+  xhtml2pdf takes about a minute and ~150 MB for 1 MB of Markdown, so larger
+  files would hit the 120 s timeout or the free instance's memory.
 - Images: JPG, PNG, GIF, BMP, TIFF, WEBP. Transparency is flattened onto white;
   EXIF orientation is applied. Animated/multi-page inputs use the first frame.
 - HTML → PDF only renders content already embedded in the file (inline

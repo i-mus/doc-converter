@@ -2,7 +2,7 @@
   "name": "doc-converter",
   "displayName": "Doc Converter — Markdown to Word & PDF, Images to PDF",
   "description": "Convert Markdown to Word (.docx) or PDF, and images to PDF, right from the editor. 100% local — no upload, no sign-up, no account. Free and open source.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "i-mus",
   "license": "MIT",
   "author": "i-mus (https://github.com/i-mus)",

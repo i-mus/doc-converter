@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import codecs
 import io
+import json
 import os
 import re
 
@@ -32,6 +34,52 @@ def _site_url() -> str:
     """Absolute site origin, e.g. https://doc-converter.onrender.com."""
     configured = os.environ.get("CONVERTER_SITE_URL", "").strip().rstrip("/")
     return configured or request.url_root.rstrip("/")
+
+
+# Markdown / HTML uploads are parsed in memory, so cap them well below the
+# general upload limit (images can legitimately be large; text rarely is).
+_MAX_TEXT_MB = float(os.environ.get("CONVERTER_MAX_TEXT_MB", "1"))
+
+
+class _BadUpload(Exception):
+    """A user-facing problem with the uploaded file."""
+
+
+def _read_text_upload(upload, what: str) -> str:
+    raw = upload.read(int(_MAX_TEXT_MB * 1024 * 1024) + 1)
+    if len(raw) > _MAX_TEXT_MB * 1024 * 1024:
+        raise _BadUpload(f"That {what} file is too large (limit {_MAX_TEXT_MB:g} MB).")
+    if raw.startswith((codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE)):
+        return raw.decode("utf-16", errors="replace")
+    try:
+        return raw.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        try:
+            return raw.decode("cp1252")  # typical of "ANSI" files saved on Windows
+        except UnicodeDecodeError:
+            return raw.decode("utf-8", errors="replace")
+
+
+def _fail(exc: Exception, what: str) -> tuple[Response, int]:
+    """Log the real error server-side; tell the user something safe."""
+    if isinstance(exc, _BadUpload):
+        return jsonify(error=str(exc)), 400
+    app.logger.exception("%s conversion failed", what)
+    return jsonify(error=f"Couldn't convert that file to {what}. It may be malformed."), 500
+
+
+def _pdf_response(pdf_bytes: bytes, name: str, unsupported: list[str]) -> Response:
+    resp = send_file(
+        io.BytesIO(pdf_bytes),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=name,
+    )
+    if unsupported:
+        # ASCII-only JSON, so it is a valid header value.
+        resp.headers["X-Unsupported-Chars"] = json.dumps(unsupported[:40])
+        resp.headers["Access-Control-Expose-Headers"] = "X-Unsupported-Chars"
+    return resp
 
 
 @app.errorhandler(413)
@@ -83,11 +131,10 @@ def md_to_docx_route() -> Response:
     if upload is None or not upload.filename:
         return jsonify(error="Upload a Markdown (.md) file."), 400
 
-    md_text = upload.read().decode("utf-8", errors="replace")
     try:
-        docx_bytes = md_to_docx.convert(md_text)
-    except Exception as exc:  # noqa: BLE001 - surface the reason to the UI
-        return jsonify(error=f"Conversion failed: {exc}"), 500
+        docx_bytes = md_to_docx.convert(_read_text_upload(upload, "Markdown"))
+    except Exception as exc:  # noqa: BLE001
+        return _fail(exc, "Word")
 
     name = _safe_stem(upload.filename, "document") + ".docx"
     return send_file(
@@ -104,19 +151,15 @@ def md_to_pdf_route() -> Response:
     if upload is None or not upload.filename:
         return jsonify(error="Upload a Markdown (.md) file."), 400
 
-    md_text = upload.read().decode("utf-8", errors="replace")
     try:
-        pdf_bytes = md_to_pdf.convert(md_text)
-    except Exception as exc:  # noqa: BLE001 - surface the reason to the UI
-        return jsonify(error=f"Conversion failed: {exc}"), 500
+        pdf_bytes, unsupported = md_to_pdf.convert_with_report(
+            _read_text_upload(upload, "Markdown")
+        )
+    except Exception as exc:  # noqa: BLE001
+        return _fail(exc, "PDF")
 
     name = _safe_stem(upload.filename, "document") + ".pdf"
-    return send_file(
-        io.BytesIO(pdf_bytes),
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name=name,
-    )
+    return _pdf_response(pdf_bytes, name, unsupported)
 
 
 @app.post("/api/image-to-pdf")
@@ -134,7 +177,7 @@ def image_to_pdf_route() -> Response:
     try:
         pdf_bytes = image_to_pdf.convert([u.read() for u in uploads])
     except Exception as exc:  # noqa: BLE001
-        return jsonify(error=f"Conversion failed: {exc}"), 500
+        return _fail(exc, "PDF")
 
     if len(uploads) == 1:
         name = _safe_stem(uploads[0].filename, "image") + ".pdf"
@@ -154,19 +197,15 @@ def html_to_pdf_route() -> Response:
     if upload is None or not upload.filename:
         return jsonify(error="Upload an HTML (.html) file."), 400
 
-    html_text = upload.read().decode("utf-8", errors="replace")
     try:
-        pdf_bytes = html_to_pdf.convert(html_text)
-    except Exception as exc:  # noqa: BLE001 - surface the reason to the UI
-        return jsonify(error=f"Conversion failed: {exc}"), 500
+        pdf_bytes, unsupported = html_to_pdf.convert_with_report(
+            _read_text_upload(upload, "HTML")
+        )
+    except Exception as exc:  # noqa: BLE001
+        return _fail(exc, "PDF")
 
     name = _safe_stem(upload.filename, "document") + ".pdf"
-    return send_file(
-        io.BytesIO(pdf_bytes),
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name=name,
-    )
+    return _pdf_response(pdf_bytes, name, unsupported)
 
 
 def main() -> None:

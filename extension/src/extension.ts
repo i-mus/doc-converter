@@ -22,21 +22,30 @@ interface MarkdownTarget {
   ext: "docx" | "pdf";
   filterLabel: string;
   progressTitle: string;
-  render: (markdown: string) => Promise<Uint8Array>;
+  render: (markdown: string) => Promise<{ data: Uint8Array; warning?: string }>;
 }
 
 const DOCX_TARGET: MarkdownTarget = {
   ext: "docx",
   filterLabel: "Word Document",
   progressTitle: "Converting to Word…",
-  render: markdownToDocx,
+  render: async (markdown) => ({ data: await markdownToDocx(markdown) }),
 };
 
 const PDF_TARGET: MarkdownTarget = {
   ext: "pdf",
   filterLabel: "PDF Document",
   progressTitle: "Converting to PDF…",
-  render: markdownToPdf,
+  render: async (markdown) => {
+    const { data, unsupported } = await markdownToPdf(markdown);
+    const shown = unsupported.slice(0, 6).join(" ");
+    return {
+      data,
+      warning: unsupported.length
+        ? `Some characters (${shown}${unsupported.length > 6 ? " …" : ""}) can't be drawn in a PDF and appear as □. Convert to Word (.docx) to keep them.`
+        : undefined,
+    };
+  },
 };
 
 const mdToDocxCommand = (resource?: vscode.Uri) => convertMarkdown(DOCX_TARGET, resource);
@@ -65,12 +74,13 @@ async function convertMarkdown(
         : await pickSaveLocation(src, target.ext, target.filterLabel);
     if (!dest) return;
 
-    const buffer = await vscode.window.withProgress(
+    const { data, warning } = await vscode.window.withProgress(
       { location: vscode.ProgressLocation.Notification, title: target.progressTitle },
       () => target.render(markdown),
     );
 
-    await vscode.workspace.fs.writeFile(dest, buffer);
+    await vscode.workspace.fs.writeFile(dest, data);
+    if (warning) void vscode.window.showWarningMessage(warning);
     await announce(dest);
   } catch (err) {
     fail(err);

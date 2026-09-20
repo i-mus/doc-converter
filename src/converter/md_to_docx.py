@@ -5,22 +5,42 @@ from __future__ import annotations
 import io
 
 import markdown
+from bs4 import BeautifulSoup
 from docx import Document
 from htmldocx import HtmlToDocx
 
 # Markdown extensions that cover the common cases: tables, fenced code blocks,
-# footnotes, definition lists, and automatic <br> on trailing spaces / newlines.
+# footnotes and definition lists. A single newline is a soft break (a space),
+# as in CommonMark, so hard-wrapped files flow; two trailing spaces still make
+# a line break.
 _EXTENSIONS = [
     "extra",
     "sane_lists",
-    "nl2br",
     "toc",
 ]
 
 
+def _images_to_alt_text(html: str) -> str:
+    """Replace every <img> with its alt text.
+
+    htmldocx downloads any http(s) image URL and opens any local path it is
+    given, so an uploaded Markdown file could make the *server* fetch internal
+    URLs or read its own files (SSRF / local file disclosure). Images are
+    never embedded; nothing is fetched or opened.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    for img in soup.find_all("img"):
+        alt = (img.get("alt") or "").strip() or "image"
+        marker = soup.new_tag("em")
+        marker.string = f"[{alt}]"
+        img.replace_with(marker)
+    return str(soup)
+
+
 def markdown_to_html(md_text: str) -> str:
-    """Render Markdown to an HTML fragment."""
-    return markdown.markdown(md_text, extensions=_EXTENSIONS, output_format="html")
+    """Render Markdown to an HTML fragment (images replaced by alt text)."""
+    html = markdown.markdown(md_text, extensions=_EXTENSIONS, output_format="html")
+    return _images_to_alt_text(html)
 
 
 def convert(md_text: str) -> bytes:

@@ -14,3 +14,5 @@ tsconfig.test.json
 **/*.map
 smoke.docx
 smoke.pdf
+*.pdf
+*.docx

@@ -21,14 +21,34 @@ function tidyListWhitespace(html: string): string {
 }
 
 /**
+ * Replace every `<img>` with its alt text, except tiny inline `data:` images.
+ *
+ * @turbodocx/html-to-docx downloads any image URL it finds (retrying on
+ * failure), so a Markdown file could make this extension call out to the
+ * network — including to local/private addresses — which would break its
+ * "never makes a network request" promise. Nothing is fetched.
+ */
+function neutralizeImages(html: string): string {
+  return html.replace(/<img\b[^>]*>/gi, (tag) => {
+    const src = /\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(tag);
+    const value = (src?.[1] ?? src?.[2] ?? src?.[3] ?? "").trim();
+    if (/^data:image\/(?:png|jpe?g|gif);base64,[a-z0-9+/=]+$/i.test(value)) return tag;
+
+    const alt = /\balt\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(tag);
+    const text = (alt?.[1] ?? alt?.[2] ?? "").replace(/[<>]/g, "").trim() || "image";
+    return `<em>[${text}]</em>`;
+  });
+}
+
+/**
  * Render Markdown to a Word (.docx) document.
  *
  * Markdown -> HTML (marked, GFM) -> DOCX (@turbodocx/html-to-docx).
- * Local/relative image references are not embedded.
+ * Images are not embedded (their alt text is kept) and nothing is downloaded.
  */
 export async function markdownToDocx(markdown: string): Promise<Buffer> {
-  const body = tidyListWhitespace(
-    await marked.parse(markdown, { gfm: true, breaks: false }),
+  const body = neutralizeImages(
+    tidyListWhitespace(await marked.parse(markdown, { gfm: true, breaks: false })),
   );
   const html =
     `<!DOCTYPE html><html><head><meta charset="utf-8"></head>` +
