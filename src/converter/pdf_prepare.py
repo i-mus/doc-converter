@@ -23,9 +23,9 @@ _BREAK = chr(0x2009)
 
 # Rough metrics for the DejaVu fonts at the default sizes, in points.
 _CONTENT_WIDTH = 482.0  # A4 minus the Markdown stylesheet's 2 cm margins
-_SANS_CHAR = 6.0
-_MONO_CHAR = 5.8
-_CELL_PAD = 10.0  # padding + border, both sides
+_SANS_CHAR = 6.3
+_MONO_CHAR = 6.2
+_CELL_PAD = 14.0  # padding + border, both sides, with a little slack
 
 _PRE_COLS = 76  # code lines longer than this are hard-wrapped
 _LONG_WORD = 50  # words longer than this get break opportunities
@@ -81,13 +81,11 @@ def _fit_tables(soup: BeautifulSoup) -> None:
 
         cols = max(len(r) for r in rows)
         available = _CONTENT_WIDTH - cols * 0.5
-        char = [_SANS_CHAR] * cols
         longest = [0.0] * cols
         ideal = [0.0] * cols
         for r in rows:
             for i, cell in enumerate(r):
                 width = _MONO_CHAR if cell.find(["code", "pre", "tt"]) else _SANS_CHAR
-                char[i] = max(char[i], width)
                 words = cell.get_text(" ").split()
                 longest[i] = max(longest[i], max((len(w) for w in words), default=0) * width)
                 ideal[i] = max(ideal[i], len(" ".join(words)) * width)
@@ -108,8 +106,12 @@ def _fit_tables(soup: BeautifulSoup) -> None:
         for r in rows:
             for i, cell in enumerate(r):
                 cell["width"] = f"{widths[i] / available * 100:.2f}%"
-                limit = max(4, int((widths[i] - _CELL_PAD) / char[i]))
                 for node in _text_nodes(cell):
+                    # Measure with the font this text is actually set in. The
+                    # epsilon keeps 28.999999... from truncating to 28.
+                    mono = node.find_parent(["code", "pre", "tt"]) is not None
+                    per_char = _MONO_CHAR if mono else _SANS_CHAR
+                    limit = max(4, int((widths[i] - _CELL_PAD) / per_char + 1e-6))
                     node.replace_with(_break_long_words(str(node), limit))
         table["data-fitted"] = "1"
 

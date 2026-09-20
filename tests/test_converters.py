@@ -174,3 +174,15 @@ def test_table_columns_are_sized_to_content():
     widths = [float(w) for w in re.findall(r'width="([\d.]+)%"', html)]
     assert len(widths) == 4 and widths[0] < widths[1]
     assert abs(sum(widths[:2]) - 100) < 0.1
+
+
+def test_a_word_that_fits_its_column_is_not_split():
+    """Regression: float truncation once split a 29-char word after 28 chars."""
+    from converter.pdf_prepare import prepare
+
+    word = "docConverter.openAfterConvert"
+    html, _ = prepare(
+        f"<table><tr><th>Setting</th><th>What</th></tr>"
+        f"<tr><td><code>{word}</code></td><td>{'text ' * 20}</td></tr></table>"
+    )
+    assert word in html
