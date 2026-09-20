@@ -1,10 +1,10 @@
 # Doc Converter
 
-Convert **Markdown → Word (.docx)** and **images → PDF**, right from VS Code.
+Convert **Markdown → Word (.docx)**, **Markdown → PDF** and **images → PDF**, right from VS Code.
 No upload, no sign-up, no account — the conversion runs on your machine, in
 the extension itself.
 
-Not in VS Code, or converting on someone else's machine? The same two
+Not in VS Code, or converting on someone else's machine? The same
 converters — plus **HTML → PDF**, currently web-only — run as a free
 website: **[doc-converter-4vgm.onrender.com](https://doc-converter-4vgm.onrender.com)**.
 A VS Code version of HTML → PDF is in testing; see [Roadmap](#roadmap).
@@ -15,36 +15,43 @@ A VS Code version of HTML → PDF is in testing; see [Roadmap](#roadmap).
   lists (nested too), tables, blockquotes and links all carry over. Open any
   `.md` file and a **Convert Markdown to Word (.docx)** button appears in the
   top-right of the editor — one click, done.
+- **Markdown to PDF** — same idea, same places, a clean A4 PDF: headings,
+  lists (nested and task lists), tables, code blocks, quotes and links.
+  Built into the extension — no browser, nothing to install.
 - **Images to PDF** — combine any number of PNG/JPEG files into one PDF,
-  one page per image, in the order you pick.
+  one page per image, in the order you pick. Open a single image and a
+  **Combine Images into PDF** button appears in the top-right of the editor.
 - Nothing is uploaded. No accounts, no API keys, no configuration required.
 - Open source (MIT) — the code is public, issues and PRs are welcome.
 
 ## How to use
 
-### Markdown → Word
+### Markdown → Word or PDF
 
-Pick whichever is closest at hand — all three do the same thing:
+Pick whichever is closest at hand — all three work the same way, for Word
+and for PDF:
 
 1. Open a `.md` file, then either:
-   - **Easiest:** click **Convert Markdown to Word (.docx)** in the top-right
-     of the editor, next to the tab bar
+   - **Easiest:** click **Convert Markdown to Word (.docx)** or **Convert
+     Markdown to PDF** in the top-right of the editor, next to the tab bar
    - Command Palette (<kbd>Ctrl+Shift+P</kbd> / <kbd>Cmd+Shift+P</kbd>) →
-     **Doc Converter: Convert Markdown to Word (.docx)**
+     **Doc Converter: Convert Markdown to Word (.docx)** (or **… to PDF**)
    - right-click the file in the Explorer sidebar → **Convert Markdown to
-     Word (.docx)**
-2. A `.docx` with the same name appears next to the `.md` file. A toast
+     Word (.docx)** or **Convert Markdown to PDF**
+2. A `.docx` (or `.pdf`) with the same name appears next to the `.md` file. A toast
    offers to reveal or open it.
 
 No file open? Run the command anyway — it'll ask you to pick a `.md` file.
 
 ### Images → PDF
 
-1. In the Explorer, select one or more images (<kbd>Ctrl</kbd>/<kbd>Cmd</kbd>-click
-   to multi-select) → right-click → **Combine Images into PDF**.
-   - One image selected → PDF is named after that image.
-   - Several → saved as `images.pdf` in the same folder, ordered by filename.
-2. Nothing selected? Run **Doc Converter: Combine Images into PDF** from the
+1. **One image:** open it in VS Code and click **Combine Images into PDF** in
+   the top-right of the editor. The PDF is saved next to it, named after the
+   image.
+2. **Several images:** in the Explorer, select them (<kbd>Ctrl</kbd>/<kbd>Cmd</kbd>-click
+   to multi-select) → right-click → **Combine Images into PDF**. They're
+   saved as `images.pdf` in the same folder, ordered by filename.
+3. Nothing selected? Run **Doc Converter: Combine Images into PDF** from the
    Command Palette instead — it opens a file picker.
 
 That's the whole workflow. There's no setup step and nothing to configure
@@ -66,10 +73,13 @@ so that claim is checkable rather than just stated.
 
 ## Current limits
 
-- Local/relative `![image](...)` references inside Markdown aren't embedded
+- Markdown → Word: local/relative `![image](...)` references aren't embedded
   (only remote images work, and only if you're online).
 - Image → PDF reads **PNG and JPEG**. EXIF auto-rotation isn't applied yet.
 - Very elaborate tables may render more simply than a full pandoc conversion.
+- Markdown → PDF: images aren't embedded (the alt text is kept), and text
+  uses a Latin/Cyrillic/Greek font, so scripts like Chinese, Japanese or
+  Arabic won't render yet. Markdown → Word has no such limit.
 
 ## Roadmap
 

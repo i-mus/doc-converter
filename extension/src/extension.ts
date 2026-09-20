@@ -1,11 +1,13 @@
 import * as path from "path";
 import * as vscode from "vscode";
 import { markdownToDocx } from "./convert/markdown";
+import { markdownToPdf } from "./convert/markdownPdf";
 import { imagesToPdf, type ImageInput } from "./convert/images";
 
 export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.commands.registerCommand("docConverter.mdToDocx", mdToDocxCommand),
+    vscode.commands.registerCommand("docConverter.mdToPdf", mdToPdfCommand),
     vscode.commands.registerCommand("docConverter.imagesToPdf", imagesToPdfCommand),
   );
 }
@@ -16,8 +18,35 @@ export function deactivate(): void {
 
 /* ------------------------------------------------------------------ commands */
 
-async function mdToDocxCommand(resource?: vscode.Uri): Promise<void> {
-  const src = await resolveMarkdownSource(resource);
+interface MarkdownTarget {
+  ext: "docx" | "pdf";
+  filterLabel: string;
+  progressTitle: string;
+  render: (markdown: string) => Promise<Uint8Array>;
+}
+
+const DOCX_TARGET: MarkdownTarget = {
+  ext: "docx",
+  filterLabel: "Word Document",
+  progressTitle: "Converting to Word…",
+  render: markdownToDocx,
+};
+
+const PDF_TARGET: MarkdownTarget = {
+  ext: "pdf",
+  filterLabel: "PDF Document",
+  progressTitle: "Converting to PDF…",
+  render: markdownToPdf,
+};
+
+const mdToDocxCommand = (resource?: vscode.Uri) => convertMarkdown(DOCX_TARGET, resource);
+const mdToPdfCommand = (resource?: vscode.Uri) => convertMarkdown(PDF_TARGET, resource);
+
+async function convertMarkdown(
+  target: MarkdownTarget,
+  resource?: vscode.Uri,
+): Promise<void> {
+  const src = await resolveMarkdownSource(resource, target.ext);
   if (!src) return;
 
   try {
@@ -31,14 +60,14 @@ async function mdToDocxCommand(resource?: vscode.Uri): Promise<void> {
     const dest =
       src.scheme === "file"
         ? await resolveDestination(
-            src.with({ path: src.path.replace(/\.(md|markdown)$/i, "") + ".docx" }),
+            src.with({ path: src.path.replace(/.(md|markdown)$/i, "") + "." + target.ext }),
           )
-        : await pickSaveLocation(src, "docx", "Word Document");
+        : await pickSaveLocation(src, target.ext, target.filterLabel);
     if (!dest) return;
 
     const buffer = await vscode.window.withProgress(
-      { location: vscode.ProgressLocation.Notification, title: "Converting to Word…" },
-      () => markdownToDocx(markdown),
+      { location: vscode.ProgressLocation.Notification, title: target.progressTitle },
+      () => target.render(markdown),
     );
 
     await vscode.workspace.fs.writeFile(dest, buffer);
@@ -102,7 +131,8 @@ async function imagesToPdfCommand(
 /* ------------------------------------------------------------------- helpers */
 
 async function resolveMarkdownSource(
-  resource?: vscode.Uri,
+  resource: vscode.Uri | undefined,
+  ext: "docx" | "pdf",
 ): Promise<vscode.Uri | undefined> {
   if (resource) return resource;
 
@@ -117,7 +147,7 @@ async function resolveMarkdownSource(
 
   const picked = await vscode.window.showOpenDialog({
     canSelectMany: false,
-    openLabel: "Convert to Word",
+    openLabel: ext === "pdf" ? "Convert to PDF" : "Convert to Word",
     filters: { Markdown: ["md", "markdown"] },
   });
   return picked?.[0];

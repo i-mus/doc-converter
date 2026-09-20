@@ -9,7 +9,7 @@ import re
 from flask import Flask, Response, jsonify, render_template, request, send_file
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from . import html_to_pdf, image_to_pdf, md_to_docx, visits
+from . import html_to_pdf, image_to_pdf, md_to_docx, md_to_pdf, visits
 
 app = Flask(__name__)
 # Honour X-Forwarded-* from Render's / any reverse proxy so request.url_root
@@ -93,6 +93,27 @@ def md_to_docx_route() -> Response:
     return send_file(
         io.BytesIO(docx_bytes),
         mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        as_attachment=True,
+        download_name=name,
+    )
+
+
+@app.post("/api/md-to-pdf")
+def md_to_pdf_route() -> Response:
+    upload = request.files.get("file")
+    if upload is None or not upload.filename:
+        return jsonify(error="Upload a Markdown (.md) file."), 400
+
+    md_text = upload.read().decode("utf-8", errors="replace")
+    try:
+        pdf_bytes = md_to_pdf.convert(md_text)
+    except Exception as exc:  # noqa: BLE001 - surface the reason to the UI
+        return jsonify(error=f"Conversion failed: {exc}"), 500
+
+    name = _safe_stem(upload.filename, "document") + ".pdf"
+    return send_file(
+        io.BytesIO(pdf_bytes),
+        mimetype="application/pdf",
         as_attachment=True,
         download_name=name,
     )

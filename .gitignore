@@ -9,3 +9,5 @@ build/
 .DS_Store
 
 scratch/
+extension/smoke*.pdf
+extension/smoke*.docx

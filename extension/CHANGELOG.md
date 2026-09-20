@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0
+
+- New: **Convert Markdown to PDF** — same three ways as Word (editor button,
+  right-click, Command Palette). Headings, lists (nested, task lists), tables,
+  code blocks, quotes and links carry over. Still 100% local: no browser, no
+  network.
+- New: opening a PNG/JPEG shows a **Combine Images into PDF** button in the
+  top-right of the editor (converts that one image). Several images still go
+  through the Explorer right-click.
+- README: document the one-click Markdown button.
+
 ## 0.1.6
 
 - README: call out the one-click **Convert Markdown to Word (.docx)** button

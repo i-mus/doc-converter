@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Markdown to Word, Image &amp; HTML to PDF Converter — free, no sign-up</title>
-<meta name="description" content="Free online converter. Turn Markdown into a formatted Word (.docx) file, merge JPG, PNG, GIF, BMP, TIFF and WebP images into one PDF, or render an HTML file to PDF. No sign-up, no watermark — files are processed in memory and never stored.">
-<meta name="keywords" content="markdown to word, markdown to docx, md to docx, convert markdown to word, markdown to word converter, image to pdf, images to pdf, jpg to pdf, png to pdf, combine images into pdf, merge images to pdf, picture to pdf, html to pdf, convert html to pdf, html to pdf converter, free document converter, online file converter, no sign up converter">
+<title>Markdown to Word &amp; PDF, Image &amp; HTML to PDF Converter — free, no sign-up</title>
+<meta name="description" content="Free online converter. Turn Markdown into a formatted Word (.docx) or PDF file, merge JPG, PNG, GIF, BMP, TIFF and WebP images into one PDF, or render an HTML file to PDF. No sign-up, no watermark — files are processed in memory and never stored.">
+<meta name="keywords" content="markdown to word, markdown to docx, md to docx, convert markdown to word, markdown to word converter, image to pdf, images to pdf, jpg to pdf, png to pdf, combine images into pdf, merge images to pdf, picture to pdf, markdown to pdf, md to pdf, convert markdown to pdf, html to pdf, convert html to pdf, html to pdf converter, free document converter, online file converter, no sign up converter">
 <meta name="robots" content="index, follow">
 <meta name="author" content="i-mus (github.com/i-mus)">
 <meta name="theme-color" content="#b4552d">
@@ -15,11 +15,11 @@
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Converter">
-<meta property="og:title" content="Markdown to Word, Image &amp; HTML to PDF Converter">
-<meta property="og:description" content="Free online converter — Markdown to .docx, images to a single PDF, HTML to PDF. No sign-up, files never stored.">
+<meta property="og:title" content="Markdown to Word &amp; PDF, Image &amp; HTML to PDF Converter">
+<meta property="og:description" content="Free online converter — Markdown to .docx or PDF, images to a single PDF, HTML to PDF. No sign-up, files never stored.">
 <meta property="og:url" content="{{ site_url }}/">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Markdown to Word, Image &amp; HTML to PDF Converter">
+<meta name="twitter:title" content="Markdown to Word &amp; PDF, Image &amp; HTML to PDF Converter">
 <meta name="twitter:description" content="Free online converter — Markdown to .docx, images to a single PDF, HTML to PDF. No sign-up.">
 
 <script type="application/ld+json">
@@ -28,7 +28,7 @@
   "@type": "WebApplication",
   "name": "Converter",
   "url": "{{ site_url }}/",
-  "description": "Free online converter for Markdown to Word (.docx), images to PDF, and HTML to PDF.",
+  "description": "Free online converter for Markdown to Word (.docx), Markdown to PDF, images to PDF, and HTML to PDF.",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
@@ -276,6 +276,12 @@
     letter-spacing: 0.16em;
   }
 
+  .go-row { display: flex; gap: 10px; }
+  .go-row button.go { flex: 1; }
+  button.go.alt { background: transparent; color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  button.go.alt:hover:not(:disabled) { background: var(--accent); color: var(--accent-ink); }
+  button.go.alt:disabled { color: var(--muted); box-shadow: inset 0 0 0 1px var(--hair); }
+
   .msg {
     margin-top: 14px;
     font-size: 12px;
@@ -315,11 +321,11 @@
     <p class="kicker">Local workshop</p>
     <h1>Converter</h1>
     <div class="rule"></div>
-    <p>Markdown to Word <span class="amp">&amp;</span> images &amp; HTML to PDF</p>
+    <p>Markdown to Word &amp; PDF <span class="amp">&amp;</span> images &amp; HTML to PDF</p>
   </header>
 
   <nav class="tabs" role="tablist">
-    <button class="active" data-tab="md" role="tab">Markdown&nbsp;to&nbsp;Word</button>
+    <button class="active" data-tab="md" role="tab">Markdown&nbsp;to&nbsp;Word&nbsp;/&nbsp;PDF</button>
     <button data-tab="img" role="tab">Images&nbsp;to&nbsp;PDF</button>
     <button data-tab="html" role="tab">HTML&nbsp;to&nbsp;PDF</button>
   </nav>
@@ -336,7 +342,10 @@
       <input type="file" id="input-md" accept=".md,.markdown,text/markdown" hidden>
     </div>
     <ul class="files" id="files-md" hidden></ul>
-    <button class="go" id="go-md" disabled>Convert to DOCX</button>
+    <div class="go-row">
+      <button class="go" id="go-md" disabled>Convert to DOCX</button>
+      <button class="go alt" id="go-md-pdf" disabled>Convert to PDF</button>
+    </div>
     <div class="msg" id="msg-md"></div>
   </section>
 
@@ -454,6 +463,7 @@
   var mdFile = null;
   var mdList = document.getElementById("files-md");
   var mdBtn = document.getElementById("go-md");
+  var mdPdfBtn = document.getElementById("go-md-pdf");
   setupDrop("drop-md", "input-md", false, function (files) { mdFile = files[0] || null; renderMd(); });
   function renderMd() {
     mdList.innerHTML = "";
@@ -467,10 +477,15 @@
       mdList.appendChild(li);
     }
     mdBtn.disabled = !mdFile;
+    mdPdfBtn.disabled = !mdFile;
   }
   mdBtn.addEventListener("click", function () {
     var fd = new FormData(); fd.append("file", mdFile);
     postForm("/api/md-to-docx", fd, document.getElementById("msg-md"), mdBtn, "document.docx");
+  });
+  mdPdfBtn.addEventListener("click", function () {
+    var fd = new FormData(); fd.append("file", mdFile);
+    postForm("/api/md-to-pdf", fd, document.getElementById("msg-md"), mdPdfBtn, "document.pdf");
   });
 
   // ---- Images ----

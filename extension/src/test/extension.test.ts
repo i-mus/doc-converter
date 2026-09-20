@@ -34,6 +34,7 @@ suite("Doc Converter", () => {
   test("commands are registered", async () => {
     const cmds = await vscode.commands.getCommands(true);
     assert.ok(cmds.includes("docConverter.mdToDocx"));
+    assert.ok(cmds.includes("docConverter.mdToPdf"));
     assert.ok(cmds.includes("docConverter.imagesToPdf"));
   });
 
@@ -58,6 +59,18 @@ suite("Doc Converter", () => {
       buf.includes(Buffer.from("word/numbering.xml")),
       "expected list numbering in the docx",
     );
+  });
+
+  test("Markdown -> PDF writes a valid PDF next to the file", async () => {
+    const dir = tmpDir();
+    const md = path.join(dir, "note.md");
+    fs.writeFileSync(md, "# Hi\n\n- a\n- b\n\n```js\nlet x = 1;\n```\n");
+
+    await vscode.commands.executeCommand("docConverter.mdToPdf", vscode.Uri.file(md));
+
+    const out = path.join(dir, "note.pdf");
+    await waitForFile(out);
+    assert.strictEqual(fs.readFileSync(out).subarray(0, 4).toString("latin1"), "%PDF");
   });
 
   test("Unsaved Markdown buffer prompts for a save location", async () => {
@@ -102,5 +115,18 @@ suite("Doc Converter", () => {
     await waitForFile(out);
     const buf = fs.readFileSync(out);
     assert.strictEqual(buf.subarray(0, 4).toString("latin1"), "%PDF");
+  });
+
+  test("Images -> PDF from the editor title bar (single image, no selection)", async () => {
+    const dir = tmpDir();
+    const a = path.join(dir, "photo.png");
+    fs.writeFileSync(a, PNG_1x1);
+
+    // The editor/title button passes only the open file's URI.
+    await vscode.commands.executeCommand("docConverter.imagesToPdf", vscode.Uri.file(a));
+
+    const out = path.join(dir, "photo.pdf");
+    await waitForFile(out);
+    assert.strictEqual(fs.readFileSync(out).subarray(0, 4).toString("latin1"), "%PDF");
   });
 });

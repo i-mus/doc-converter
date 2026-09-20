@@ -1,8 +1,8 @@
 {
   "name": "doc-converter",
-  "displayName": "Doc Converter — Markdown to Word & Images to PDF",
-  "description": "Convert Markdown to Word (.docx) and images to PDF, right from the editor. 100% local — no upload, no sign-up, no account. Free and open source.",
-  "version": "0.1.6",
+  "displayName": "Doc Converter — Markdown to Word & PDF, Images to PDF",
+  "description": "Convert Markdown to Word (.docx) or PDF, and images to PDF, right from the editor. 100% local — no upload, no sign-up, no account. Free and open source.",
+  "version": "0.2.0",
   "publisher": "i-mus",
   "license": "MIT",
   "author": "i-mus (https://github.com/i-mus)",
@@ -25,6 +25,8 @@
     "markdown to word",
     "markdown to docx",
     "md to docx",
+    "markdown to pdf",
+    "md to pdf",
     "docx",
     "word document",
     "image to pdf",
@@ -52,6 +54,11 @@
         "category": "Doc Converter"
       },
       {
+        "command": "docConverter.mdToPdf",
+        "title": "Convert Markdown to PDF",
+        "category": "Doc Converter"
+      },
+      {
         "command": "docConverter.imagesToPdf",
         "title": "Combine Images into PDF",
         "category": "Doc Converter"
@@ -65,9 +72,14 @@
           "group": "5_export@1"
         },
         {
+          "command": "docConverter.mdToPdf",
+          "when": "resourceExtname =~ /.(md|markdown)$/i",
+          "group": "5_export@2"
+        },
+        {
           "command": "docConverter.imagesToPdf",
           "when": "resourceExtname =~ /\\.(png|jpe?g)$/i",
-          "group": "5_export@2"
+          "group": "5_export@3"
         }
       ],
       "editor/title": [
@@ -75,11 +87,25 @@
           "command": "docConverter.mdToDocx",
           "when": "resourceExtname =~ /\\.(md|markdown)$/i",
           "group": "navigation@9"
+        },
+        {
+          "command": "docConverter.mdToPdf",
+          "when": "resourceExtname =~ /.(md|markdown)$/i",
+          "group": "navigation@10"
+        },
+        {
+          "command": "docConverter.imagesToPdf",
+          "when": "resourceExtname =~ /\\.(png|jpe?g)$/i",
+          "group": "navigation@9"
         }
       ],
       "commandPalette": [
         {
           "command": "docConverter.mdToDocx",
+          "when": "true"
+        },
+        {
+          "command": "docConverter.mdToPdf",
           "when": "true"
         },
         {
@@ -115,11 +141,13 @@
   "dependencies": {
     "@turbodocx/html-to-docx": "^1.0.0",
     "marked": "^12.0.0",
-    "pdf-lib": "^1.17.1"
+    "pdf-lib": "^1.17.1",
+    "pdfmake": "^0.2.20"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "^20.14.0",
+    "@types/pdfmake": "^0.2.13",
     "@types/vscode": "^1.85.0",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.4.1",

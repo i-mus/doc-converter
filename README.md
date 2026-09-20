@@ -1,8 +1,9 @@
 # Converter
 
-Three tools, in two forms:
+Four tools, in two forms:
 
 - **Markdown → DOCX** – drop a `.md` file, get a Word document back.
+- **Markdown → PDF** – same file, PDF out (via the HTML → PDF engine below).
 - **Image → PDF** – drop one or more images, get a single PDF (drag to reorder).
 - **HTML → PDF** – drop an `.html` file, get a PDF back (web app only for now).
 
@@ -56,9 +57,10 @@ covers Railway / Heroku-style platforms.
 ## Use from Python / scripts
 
 ```python
-from converter import md_to_docx, image_to_pdf, html_to_pdf
+from converter import md_to_docx, md_to_pdf, image_to_pdf, html_to_pdf
 
 md_to_docx.convert_file("notes.md", "notes.docx")
+md_to_pdf.convert_file("notes.md", "notes.pdf")
 image_to_pdf.convert_files(["1.jpg", "2.png"], "out.pdf")
 html_to_pdf.convert_file("report.html", "report.pdf")
 ```
@@ -68,6 +70,7 @@ html_to_pdf.convert_file("report.html", "report.pdf")
 | Path | Purpose |
 |------|---------|
 | `src/converter/md_to_docx.py`   | Markdown → HTML (`markdown`) → DOCX (`htmldocx` + `python-docx`) |
+| `src/converter/md_to_pdf.py`    | Markdown → HTML (`markdown`) → PDF (`xhtml2pdf`, remote resources blocked) |
 | `src/converter/image_to_pdf.py` | Normalise images with Pillow, assemble PDF with `img2pdf` |
 | `src/converter/html_to_pdf.py`  | HTML → PDF (`xhtml2pdf`), external resources blocked (see below) |
 | `src/converter/visits.py`       | Visit counter (Upstash Redis, or a local JSON file) |

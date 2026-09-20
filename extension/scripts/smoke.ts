@@ -3,6 +3,7 @@ import { writeFileSync } from "fs";
 import sharp from "sharp";
 import { markdownToDocx } from "../src/convert/markdown";
 import { imagesToPdf } from "../src/convert/images";
+import { markdownToPdf } from "../src/convert/markdownPdf";
 
 const md = [
   "# Title",
@@ -47,6 +48,12 @@ async function main(): Promise<number> {
   const listsOk = docx.includes(Buffer.from("word/numbering.xml"));
   console.log(`list  numbering.xml ${listsOk ? "present  OK" : "MISSING  BAD"}`);
   if (!listsOk) failures++;
+
+  const mdPdf = await markdownToPdf(md);
+  writeFileSync("smoke-md.pdf", mdPdf);
+  const mdPdfOk = Buffer.from(mdPdf.subarray(0, 4)).toString("latin1") === "%PDF";
+  console.log(`mdpdf ${mdPdf.length} bytes  ${mdPdfOk ? "OK" : "BAD"}`);
+  if (!mdPdfOk) failures++;
 
   const pdf = await imagesToPdf([
     { name: "a.png", data: png },
