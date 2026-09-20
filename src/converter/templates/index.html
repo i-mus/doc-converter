@@ -422,8 +422,16 @@
     var label = btn.textContent;
     msgEl.textContent = "Converting…"; msgEl.className = "msg";
     btn.disabled = true; btn.textContent = "Working…";
+    // Free hosting sleeps when idle; if the request is still pending after a few
+    // seconds, say so instead of leaving a silent spinner.
+    var slowTimer = setTimeout(function () {
+      msgEl.textContent = "Waking the server (free hosting sleeps when idle) — this can take up to a minute…";
+    }, 4000);
     try {
       var res = await fetch(url, { method: "POST", body: formData });
+      if ([502, 503, 504].includes(res.status)) {
+        throw new Error("The server is still waking up. Give it a few seconds and try again.");
+      }
       if (!res.ok) {
         var err = await res.json().catch(() => ({ error: "Conversion failed (" + res.status + ")" }));
         throw new Error(err.error || "Conversion failed");
@@ -437,6 +445,7 @@
     } catch (e) {
       msgEl.textContent = e.message; msgEl.className = "msg err";
     } finally {
+      clearTimeout(slowTimer);
       btn.disabled = false; btn.textContent = label;
     }
   }
