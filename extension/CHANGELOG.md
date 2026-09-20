@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.6
+
+- README: call out the one-click **Convert Markdown to Word (.docx)** button
+  in the top-right of the editor for `.md` files. No code changes.
+
 ## 0.1.5
 
 - README: note that HTML → PDF is live on the web version and in testing

@@ -12,7 +12,9 @@ A VS Code version of HTML → PDF is in testing; see [Roadmap](#roadmap).
 ## Features
 
 - **Markdown to Word** — headings, bold/italic/code, bullet and numbered
-  lists (nested too), tables, blockquotes and links all carry over.
+  lists (nested too), tables, blockquotes and links all carry over. Open any
+  `.md` file and a **Convert Markdown to Word (.docx)** button appears in the
+  top-right of the editor — one click, done.
 - **Images to PDF** — combine any number of PNG/JPEG files into one PDF,
   one page per image, in the order you pick.
 - Nothing is uploaded. No accounts, no API keys, no configuration required.
@@ -25,9 +27,10 @@ A VS Code version of HTML → PDF is in testing; see [Roadmap](#roadmap).
 Pick whichever is closest at hand — all three do the same thing:
 
 1. Open a `.md` file, then either:
+   - **Easiest:** click **Convert Markdown to Word (.docx)** in the top-right
+     of the editor, next to the tab bar
    - Command Palette (<kbd>Ctrl+Shift+P</kbd> / <kbd>Cmd+Shift+P</kbd>) →
      **Doc Converter: Convert Markdown to Word (.docx)**
-   - the icon in the editor's title bar (top-right of the tab)
    - right-click the file in the Explorer sidebar → **Convert Markdown to
      Word (.docx)**
 2. A `.docx` with the same name appears next to the `.md` file. A toast
