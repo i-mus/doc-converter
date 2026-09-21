@@ -18,7 +18,8 @@ a { color: #b4552d; }
 code, pre { font-family: Courier; font-size: 9.5pt; background-color: #f3f0ec; }
 pre { padding: 8pt; }
 blockquote { margin-left: 12pt; padding-left: 10pt; border-left: 2pt solid #b4552d; color: #555; }
-table { border: 0.5pt solid #999; border-collapse: collapse; }
+table { border: 0.5pt solid #999; border-collapse: collapse; margin-bottom: 14pt; }
+li.task { list-style-type: none; }
 th, td { border: 0.5pt solid #999; padding: 4pt; }
 th { background-color: #f3f0ec; }
 hr { border: 0; border-top: 0.5pt solid #999; }

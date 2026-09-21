@@ -153,6 +153,37 @@ def test_soft_line_breaks_flow_into_one_paragraph():
     assert markdown_to_html("one  \ntwo").count("<br") == 1  # explicit break kept
 
 
+def test_task_list_items_become_checkboxes():
+    from converter.md_to_docx import markdown_to_html
+
+    box_off, box_on = chr(0x2610), chr(0x2611)
+    html = markdown_to_html(
+        "- [x] done\n- [ ] todo\n- plain\n\n1. [ ] numbered\n\n"
+        "Inline [x] stays. [x]glued too.\n\n- [X] loose\n\n- [ ] loose two\n"
+    )
+    assert f"{box_on} done" in html and f"{box_off} todo" in html
+    assert f"{box_on} loose" in html and f"{box_off} loose two" in html
+    assert "[ ]" not in html and "[X]" not in html
+    assert "Inline [x] stays. [x]glued too." in html  # only leading marks count
+    assert html.count('class="task"') == 4  # bulleted items only
+    assert f"<li>{box_off} numbered</li>" in html  # numbered keep their number
+
+
+def test_loose_lists_have_no_empty_bullets_in_word():
+    """Regression: '<li><p>' made an empty bullet plus a bullet-less text line."""
+    from docx import Document
+
+    from converter.md_to_docx import convert
+
+    doc = Document(io.BytesIO(convert("- [x] one\n\n- [ ] two\n\n- three\n")))
+    bullets = [p for p in doc.paragraphs if p.style.name == "List Bullet"]
+    assert [p.text for p in bullets] == [
+        chr(0x2611) + " one",
+        chr(0x2610) + " two",
+        "three",
+    ]
+
+
 def test_long_words_and_code_lines_are_wrapped():
     from converter.pdf_prepare import prepare
 

@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import io
+import re
 
 import markdown
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString
 from docx import Document
 from htmldocx import HtmlToDocx
 
@@ -37,15 +38,64 @@ def _images_to_alt_text(html: str) -> str:
     return str(soup)
 
 
+_UNCHECKED = chr(0x2610)  # ☐
+_CHECKED = chr(0x2611)  # ☑
+_TASK_MARK = re.compile(r"\s*\[([ xX])\](?:\s+|$)")
+
+
+def _task_lists(html: str) -> str:
+    """Turn GitHub-style ``- [x]`` / ``- [ ]`` items into ☑ / ☐ checkboxes.
+
+    Python-Markdown leaves the ``[x]`` as literal text. Bulleted task items get
+    ``class="task"`` so the PDF stylesheet can drop the bullet.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    for li in soup.find_all("li"):
+        first = next((s for s in li.find_all(string=True) if s.strip()), None)
+        if first is None or type(first) is not NavigableString:
+            continue
+        # Only the item's own leading text, not text inside a nested list.
+        if first.parent is not li and not (
+            first.parent.name == "p" and first.parent.parent is li
+        ):
+            continue
+        match = _TASK_MARK.match(str(first))
+        if not match:
+            continue
+        box = _CHECKED if match.group(1) in "xX" else _UNCHECKED
+        first.replace_with(f"{box} {str(first)[match.end():]}")
+        # Bulleted items lose the bullet; numbered ones keep their number.
+        if li.parent is not None and li.parent.name == "ul":
+            li["class"] = li.get("class", []) + ["task"]
+    return str(soup)
+
+
 def markdown_to_html(md_text: str) -> str:
     """Render Markdown to an HTML fragment (images replaced by alt text)."""
     html = markdown.markdown(md_text, extensions=_EXTENSIONS, output_format="html")
-    return _images_to_alt_text(html)
+    return _task_lists(_images_to_alt_text(html))
+
+
+def _flatten_list_paragraphs(html: str) -> str:
+    """Unwrap ``<li><p>`` (a "loose" list, items separated by blank lines).
+
+    htmldocx opens a bullet paragraph for the ``<li>`` and then a second,
+    bullet-less one for the ``<p>``, leaving an empty bullet with its text on
+    the next line.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    for li in soup.find_all("li"):
+        paragraphs = li.find_all("p", recursive=False)
+        for i, p in enumerate(paragraphs):
+            if i < len(paragraphs) - 1:
+                p.append(soup.new_tag("br"))
+            p.unwrap()
+    return str(soup)
 
 
 def convert(md_text: str) -> bytes:
     """Convert a Markdown string to DOCX and return the file as bytes."""
-    html = markdown_to_html(md_text)
+    html = _flatten_list_paragraphs(markdown_to_html(md_text))
 
     document = Document()
     parser = HtmlToDocx()
